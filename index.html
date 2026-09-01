@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Painel de Preços — Tubrax</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #12161d;
+    --surface: #1a2029;
+    --surface-2: #212836;
+    --border: #2a3140;
+    --text: #e7eaef;
+    --text-dim: #8b93a3;
+    --text-faint: #5c6577;
+    --brand: #3fb5c9;
+    --vantagem: #33c17f;
+    --desvantagem: #e0555f;
+    --neutro: #d9a441;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- Cabeçalho ---------- */
+
+  header {
+    padding: 28px clamp(20px, 4vw, 48px) 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .brand-block h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .brand-block p {
+    margin: 4px 0 0;
+    color: var(--text-dim);
+    font-size: 13.5px;
+  }
+
+  #ultima-atualizacao {
+    font-size: 12.5px;
+    color: var(--text-faint);
+    font-family: 'IBM Plex Mono', monospace;
+    text-align: right;
+  }
+
+  /* ---------- Layout geral ---------- */
+
+  main {
+    padding: 24px clamp(20px, 4vw, 48px) 60px;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  /* ---------- Cards de resumo ---------- */
+
+  .resumo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+
+  .resumo .card {
+    background: var(--surface);
+    padding: 18px 20px;
+  }
+
+  .resumo .card .rotulo {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin: 0 0 8px;
+  }
+
+  .resumo .card .valor {
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1;
+  }
+
+  .resumo .card .valor.vantagem { color: var(--vantagem); }
+  .resumo .card .valor.desvantagem { color: var(--desvantagem); }
+
+  /* ---------- Filtros ---------- */
+
+  .filtros {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+
+  .filtros select, .filtros input[type="text"] {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 7px;
+    padding: 8px 12px;
+    font-size: 13.5px;
+    font-family: inherit;
+    min-width: 140px;
+  }
+
+  .filtros select:focus, .filtros input:focus {
+    outline: 2px solid var(--brand);
+    outline-offset: -1px;
+  }
+
+  .filtros label.check {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13.5px;
+    color: var(--text-dim);
+    margin-left: 4px;
+  }
+
+  .filtros .contagem {
+    margin-left: auto;
+    font-size: 12.5px;
+    color: var(--text-faint);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ---------- Tabela ---------- */
+
+  .tabela-wrap {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    text-align: left;
+    background: var(--surface-2);
+    color: var(--text-dim);
+    font-weight: 500;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  thead th:hover { color: var(--text); }
+
+  thead th .seta {
+    color: var(--brand);
+    margin-left: 4px;
+    font-size: 11px;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-2); }
+
+  tbody td {
+    padding: 9px 14px;
+    white-space: nowrap;
+  }
+
+  td.sku { color: var(--text-dim); }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .badge.vantagem { background: rgba(51, 193, 127, 0.14); color: var(--vantagem); }
+  .badge.desvantagem { background: rgba(224, 85, 95, 0.14); color: var(--desvantagem); }
+  .badge.neutro { background: rgba(217, 164, 65, 0.14); color: var(--neutro); }
+
+  .estado {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  .estado.erro { color: var(--desvantagem); }
+
+  footer {
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 12px;
+    padding: 30px 20px 10px;
+  }
+
+  @media (max-width: 640px) {
+    .tabela-wrap { overflow-x: auto; }
+    table { min-width: 760px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand-block">
+    <h1>Painel de Preços — Tubrax</h1>
+    <p>Comparativo de preço por canal, família e vendedor</p>
+  </div>
+  <div id="ultima-atualizacao">carregando dados…</div>
+</header>
+
+<main>
+
+  <section class="resumo" id="resumo">
+    <div class="card">
+      <p class="rotulo">SKUs monitorados</p>
+      <p class="valor num" id="r-total">—</p>
+    </div>
+    <div class="card">
+      <p class="rotulo">Em vantagem de preço</p>
+      <p class="valor num vantagem" id="r-vantagem">—</p>
+    </div>
+    <div class="card">
+      <p class="rotulo">Em desvantagem de preço</p>
+      <p class="valor num desvantagem" id="r-desvantagem">—</p>
+    </div>
+    <div class="card">
+      <p class="rotulo">Diferença média</p>
+      <p class="valor num" id="r-media">—</p>
+    </div>
+  </section>
+
+  <div class="filtros">
+    <select id="f-canal"><option value="">Todos os canais</option></select>
+    <select id="f-familia"><option value="">Todas as famílias</option></select>
+    <select id="f-seller"><option value="">Todos os sellers</option></select>
+    <input type="text" id="f-busca" placeholder="Buscar SKU…" />
+    <label class="check">
+      <input type="checkbox" id="f-apenas-tubrax" checked />
+      Apenas linhas Tubrax
+    </label>
+    <span class="contagem" id="contagem-linhas"></span>
+  </div>
+
+  <div class="tabela-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th data-col="data">Data</th>
+          <th data-col="canal">Canal</th>
+          <th data-col="sku">SKU</th>
+          <th data-col="familia">Família</th>
+          <th data-col="seller">Seller</th>
+          <th data-col="precoTubrax">Preço Tubrax</th>
+          <th data-col="valorConcorrente">Valor concorrente</th>
+          <th data-col="diferencaValor">Diferença (R$)</th>
+          <th data-col="diferencaPercentual">Diferença (%)</th>
+          <th data-col="classificacao">Classificação</th>
+        </tr>
+      </thead>
+      <tbody id="corpo-tabela">
+        <tr><td colspan="10" class="estado">Carregando…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>Fonte: planilha "Indicadores" via Google Apps Script</footer>
+
+</main>
+
+<script>
+// ============================================================
+// CONFIGURAÇÃO — troque pela URL fixa do seu Web App
+// (Implantar → Gerenciar implantações → URL do app)
+// ============================================================
+const API_URL = "https://script.google.com/a/macros/grupotbx.com.br/s/AKfycbzOq_3kAe3yuaqc49nfXO-Qt0mwVPNhK0UdjYWwF6q3PErtiDvdQT9a9IBVHBw5_5A/exec";
+
+// Nomes das colunas como vêm da planilha (ajuste se forem diferentes)
+const COLUNAS = {
+  data: "Data",
+  canal: "Canal",
+  sku: "SKU",
+  familia: "Família",
+  seller: "Seller",
+  valorConcorrente: "Valor Concorrente",
+  ehTubrax: "É Tubrax",
+  precoTubrax: "Preço Tubrax",
+  diferencaValor: "Diferença de Valor",
+  diferencaPercentual: "Diferença Percentual",
+  classificacao: "Classificação"
+};
+
+let dadosBrutos = [];
+let ordenacao = { coluna: "diferencaPercentual", asc: true };
+
+// ---------- utilidades ----------
+
+function paraBooleano(v) {
+  if (typeof v === "boolean") return v;
+  if (typeof v === "number") return v === 1;
+  if (typeof v === "string") {
+    const s = v.trim().toLowerCase();
+    return s === "true" || s === "sim" || s === "verdadeiro" || s === "1" || s === "x";
+  }
+  return false;
+}
+
+function paraNumero(v) {
+  if (typeof v === "number") return v;
+  if (typeof v !== "string") return NaN;
+  const limpo = v.replace(/\./g, "").replace(",", ".").replace(/[^\d.-]/g, "");
+  return parseFloat(limpo);
+}
+
+function formatarMoeda(v) {
+  if (isNaN(v)) return "—";
+  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function formatarPercentual(v) {
+  if (isNaN(v)) return "—";
+  return (v > 0 ? "+" : "") + v.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%";
+}
+
+function formatarData(v) {
+  const d = new Date(v);
+  if (isNaN(d.getTime())) return String(v ?? "—");
+  return d.toLocaleDateString("pt-BR");
+}
+
+function classeClassificacao(texto) {
+  const s = String(texto || "").toLowerCase();
+  if (s.includes("desvant") || s.includes("acima") || s.includes("perd")) return "desvantagem";
+  if (s.includes("vant") || s.includes("abaixo") || s.includes("ganh")) return "vantagem";
+  return "neutro";
+}
+
+// ---------- carregamento ----------
+
+async function carregarDados() {
+  try {
+    const resp = await fetch(API_URL);
+    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    const json = await resp.json();
+    if (json.erro) throw new Error(json.erro);
+
+    dadosBrutos = json.map(linha => ({
+      data: linha[COLUNAS.data],
+      canal: linha[COLUNAS.canal],
+      sku: linha[COLUNAS.sku],
+      familia: linha[COLUNAS.familia],
+      seller: linha[COLUNAS.seller],
+      valorConcorrente: paraNumero(linha[COLUNAS.valorConcorrente]),
+      ehTubrax: paraBooleano(linha[COLUNAS.ehTubrax]),
+      precoTubrax: paraNumero(linha[COLUNAS.precoTubrax]),
+      diferencaValor: paraNumero(linha[COLUNAS.diferencaValor]),
+      diferencaPercentual: paraNumero(linha[COLUNAS.diferencaPercentual]),
+      classificacao: linha[COLUNAS.classificacao]
+    }));
+
+    document.getElementById("ultima-atualizacao").textContent =
+      "atualizado às " + new Date().toLocaleTimeString("pt-BR");
+
+    popularFiltros();
+    renderizar();
+  } catch (erro) {
+    document.getElementById("corpo-tabela").innerHTML =
+      `<tr><td colspan="10" class="estado erro">Não foi possível carregar os dados: ${erro.message}<br>
+       Confira se a URL do Web App em API_URL está correta e se o deploy está ativo.</td></tr>`;
+    document.getElementById("ultima-atualizacao").textContent = "falha ao carregar";
+  }
+}
+
+// ---------- filtros ----------
+
+function opcoesUnicas(campo) {
+  return [...new Set(dadosBrutos.map(l => l[campo]).filter(Boolean))].sort();
+}
+
+function popularFiltros() {
+  preencherSelect("f-canal", opcoesUnicas("canal"));
+  preencherSelect("f-familia", opcoesUnicas("familia"));
+  preencherSelect("f-seller", opcoesUnicas("seller"));
+}
+
+function preencherSelect(id, opcoes) {
+  const sel = document.getElementById(id);
+  const atual = sel.value;
+  sel.innerHTML = sel.options[0].outerHTML;
+  opcoes.forEach(op => {
+    const el = document.createElement("option");
+    el.value = op;
+    el.textContent = op;
+    sel.appendChild(el);
+  });
+  sel.value = atual;
+}
+
+function linhasFiltradas() {
+  const canal = document.getElementById("f-canal").value;
+  const familia = document.getElementById("f-familia").value;
+  const seller = document.getElementById("f-seller").value;
+  const busca = document.getElementById("f-busca").value.trim().toLowerCase();
+  const apenasTubrax = document.getElementById("f-apenas-tubrax").checked;
+
+  return dadosBrutos.filter(l => {
+    if (canal && l.canal !== canal) return false;
+    if (familia && l.familia !== familia) return false;
+    if (seller && l.seller !== seller) return false;
+    if (apenasTubrax && !l.ehTubrax) return false;
+    if (busca && !String(l.sku || "").toLowerCase().includes(busca)) return false;
+    return true;
+  });
+}
+
+// ---------- render ----------
+
+function renderizar() {
+  const linhas = linhasFiltradas();
+
+  linhas.sort((a, b) => {
+    const va = a[ordenacao.coluna], vb = b[ordenacao.coluna];
+    const na = typeof va === "number" && !isNaN(va);
+    const nb = typeof vb === "number" && !isNaN(vb);
+    let cmp;
+    if (na && nb) cmp = va - vb;
+    else cmp = String(va ?? "").localeCompare(String(vb ?? ""), "pt-BR");
+    return ordenacao.asc ? cmp : -cmp;
+  });
+
+  renderizarResumo(linhas);
+  renderizarTabela(linhas);
+  renderizarCabecalhos();
+
+  document.getElementById("contagem-linhas").textContent =
+    `${linhas.length} de ${dadosBrutos.length} linhas`;
+}
+
+function renderizarResumo(linhas) {
+  const comDiferenca = linhas.filter(l => !isNaN(l.diferencaPercentual));
+  const vantagem = comDiferenca.filter(l => classeClassificacao(l.classificacao) === "vantagem").length;
+  const desvantagem = comDiferenca.filter(l => classeClassificacao(l.classificacao) === "desvantagem").length;
+  const media = comDiferenca.length
+    ? comDiferenca.reduce((s, l) => s + l.diferencaPercentual, 0) / comDiferenca.length
+    : NaN;
+
+  document.getElementById("r-total").textContent = linhas.length;
+  document.getElementById("r-vantagem").textContent = vantagem;
+  document.getElementById("r-desvantagem").textContent = desvantagem;
+  document.getElementById("r-media").textContent = formatarPercentual(media);
+}
+
+function renderizarTabela(linhas) {
+  const corpo = document.getElementById("corpo-tabela");
+
+  if (!linhas.length) {
+    corpo.innerHTML = `<tr><td colspan="10" class="estado">Nenhuma linha encontrada para esse filtro.</td></tr>`;
+    return;
+  }
+
+  corpo.innerHTML = linhas.map(l => `
+    <tr>
+      <td>${formatarData(l.data)}</td>
+      <td>${l.canal ?? "—"}</td>
+      <td class="sku num">${l.sku ?? "—"}</td>
+      <td>${l.familia ?? "—"}</td>
+      <td>${l.seller ?? "—"}</td>
+      <td class="num">${formatarMoeda(l.precoTubrax)}</td>
+      <td class="num">${formatarMoeda(l.valorConcorrente)}</td>
+      <td class="num">${formatarMoeda(l.diferencaValor)}</td>
+      <td class="num">${formatarPercentual(l.diferencaPercentual)}</td>
+      <td><span class="badge ${classeClassificacao(l.classificacao)}">${l.classificacao ?? "—"}</span></td>
+    </tr>
+  `).join("");
+}
+
+function renderizarCabecalhos() {
+  document.querySelectorAll("thead th").forEach(th => {
+    const col = th.dataset.col;
+    th.innerHTML = th.textContent.replace(/\s*[↑↓]$/, "");
+    if (col === ordenacao.coluna) {
+      th.innerHTML += `<span class="seta">${ordenacao.asc ? "↑" : "↓"}</span>`;
+    }
+  });
+}
+
+// ---------- eventos ----------
+
+document.querySelectorAll("thead th").forEach(th => {
+  th.addEventListener("click", () => {
+    const col = th.dataset.col;
+    if (ordenacao.coluna === col) ordenacao.asc = !ordenacao.asc;
+    else { ordenacao.coluna = col; ordenacao.asc = true; }
+    renderizar();
+  });
+});
+
+["f-canal", "f-familia", "f-seller", "f-apenas-tubrax"].forEach(id =>
+  document.getElementById(id).addEventListener("change", renderizar)
+);
+document.getElementById("f-busca").addEventListener("input", renderizar);
+
+carregarDados();
+</script>
+
+</body>
+</html>
